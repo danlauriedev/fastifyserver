@@ -154,7 +154,7 @@ jobs:
         run: pnpm run:fastify &
       # Better to run this with Docker instead of sudo? Can now be OS agnostic.
       - name: Run Load Tests with K6 in Docker
-        run: docker run --rm -i grafana/k6 run - <./src/scripts/k6.ts
+        run: pnpm test:k6
 
   deploy-dev:
     name: Deploy to Dev Environment
