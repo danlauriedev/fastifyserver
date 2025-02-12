@@ -7,7 +7,7 @@ export const options = {
 };
 
 export default function () {
-  const response = http.get('http://localhost:3000/scores');
+  const response = http.get('http://host.docker.internal:3000/scores');
   check(response, {
     'is status 200': (r) => r.status === 200
   });
