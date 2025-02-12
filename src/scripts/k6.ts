@@ -1,10 +1,6 @@
 import http from 'k6/http';
 import { check } from 'k6';
 
-// const osType = __ENV.OS_TYPE || 'Darwin';
-// const BASE_URL =
-//   osType === 'linux' ? 'http://localhost:3000/scores' : 'http://host.docker.internal:3000/scores';
-
 export const options = {
   iterations: 10,
   VUs: 10
