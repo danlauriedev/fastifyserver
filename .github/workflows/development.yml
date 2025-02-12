@@ -17,16 +17,16 @@ jobs:
       - name: Checkout Code # Pull latest version of code from repo, enables access to source files.
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+        # We need corepack to install pnpm, avoids global package install,
+        # Promotes a consistent version as comes from project's package.json.
+
       - name: Setup Node.js and pnpm
         uses: actions/setup-node@v4
         with:
           node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
           cache: 'pnpm'
-
-      - name: Install pnpm
-        run: corepack enable && corepack prepare pnpm@latest --activate
-        # We need corepack to install pnpm, avoids global package install,
-        # Promotes a consistent version as comes from project's package.json.
 
       - name: Cache pnpm Deps
         id: cache-pnpm-deps
