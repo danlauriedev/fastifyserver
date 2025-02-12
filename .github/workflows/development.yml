@@ -50,6 +50,17 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
+          cache: 'pnpm'
+
       - name: Restore pnpm Cache # Avoid reinstalling
         uses: actions/cache@v4
         with:
