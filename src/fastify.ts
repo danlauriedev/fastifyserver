@@ -1,11 +1,11 @@
-import Fastify, { FastifyInstance, RouteShorthandOptions } from 'fastify';
+import Fastify, { FastifyInstance } from 'fastify';
 import { fixtureData } from './mockData/fixtureData';
 
 const server: FastifyInstance = Fastify({
   logger: true
 });
 
-server.get('/scores', async (request, reply) => {
+server.get('/scores', async (_request, _reply) => {
   try {
     return fixtureData;
   } catch (err) {

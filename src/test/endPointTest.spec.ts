@@ -2,6 +2,7 @@ import request from 'supertest';
 import { FastifyInstance } from 'fastify';
 import { buildFastify } from '../fastify';
 import { fixtureData } from '../mockData/fixtureData';
+import { describe, it, expect } from '@jest/globals';
 
 let app: FastifyInstance;
 
