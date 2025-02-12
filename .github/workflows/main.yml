@@ -1,0 +1,190 @@
+name: Push to Main
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allow manual triggering of workflow
+jobs:
+  setup:
+    name: Setup & Cache Deps
+    runs-on: ubuntu-latest
+    # outputs:
+    #   cache-hit: ${{ steps.cache-pnpm-deps.outputs.cache-hit }} # Expose cache-hit to see if cache was used or not.
+
+    steps:
+      - name: Checkout Code # Pull latest version of code from repo, enables access to source files.
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
+          cache: 'pnpm'
+
+      - name: Install Dependencies with pnpm
+        # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Prettier
+        run: pnpm prettier:write # Define prettier command
+
+      - name: Run ESLint
+        run: pnpm lint # Define lint command
+
+      - name: Check for TS errors
+        run: tsc
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
+          cache: 'pnpm'
+
+      - name: Install Dependencies with pnpm
+        run: pnpm install --frozen-lockfile
+
+      - name: Build the Project
+        run: pnpm build
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: 'tsconfig.tsbuildinfo' # Name of the artifact
+          path: './tsconfig.tsbuildinfo' # Path to the artifact
+
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    needs: [setup, build] # Runs only if setup and build pass
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Dependencies with pnpm
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Node.js and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
+          cache: 'pnpm'
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: 'tsconfig.tsbuildinfo'
+
+      - name: Run Unit Tests
+        run: pnpm run test # Define a test command with coverage
+
+  pact-tests:
+    name: Pact Contract Tests
+    runs-on: ubuntu-latest
+    needs: [setup, build]
+    if: ${{ vars.RUN_CONTRACT_TESTS == 'true' }} # Only runs if enabled via GitHub Actions variable
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: 'tsconfig.tsbuildinfo'
+
+      - name: Run Pact Contract Tests
+        run: CONTRACT_TEST_COMMAND # Define a contract test command
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [pact-tests, unit tests]
+    if: success()
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: 'tsconfig.tsbuildinfo'
+
+      - name: Deploy to Staging
+        run: echo "🚀 Deployed to Staging Environment"
+
+  approve-prod:
+    name: Manual Approval for Production
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: success()
+
+    steps:
+      - uses: trstringer/manual-approval@v1 # Marketplace action for manual approval
+        with:
+          secret: ${{ github.TOKEN }} # GitHub token to allow approval
+          approvers: [] # Add GitHub usernames who can approve/ or an org team.
+          minimum-approvals: 1 # Minimum approvals required
+          issue-title: 'Deploying to prod from staging'
+          issue-body: 'Please approve or deny the deployment to prod.'
+          exclude-workflow-initiator-as-approver: true # Exclude the person who initiated the workflow
+
+  deploy-prod:
+    name: Deploy to Prod
+    runs-on: ubuntu-latest
+    needs: approve-prod
+    if: success()
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: 'tsconfig.tsbuildinfo'
+
+      - name: Deploy to Prod
+        run: echo "🚀 Deployed to Prod Environment"
+
+  sync-dev:
+    name: Sync Development with Main
+    runs-on: ubuntu-latest
+    needs: deploy-prod
+    if: success()
+
+    # With this, we can switch to the dev branch
+    # and merge the main branch into it.
+    # no edit for no change to commit message
+    steps:
+      - name: Merge Main into Development
+        run: |
+          git fetch origin
+          git checkout development
+          git merge origin/main --no-edit 
+          git push origin development
