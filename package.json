@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "pnpm jest --watchAll",
+    "test": "pnpm jest",
     "test:k6": "k6 run src/scripts/k6.ts",
     "run:fastify": "pnpm tsx src/fastify.ts",
     "lint": "pnpm eslint",
