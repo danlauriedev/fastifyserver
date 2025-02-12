@@ -81,8 +81,8 @@ jobs:
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-output
-          path: /dist # Need to define a build path
+          name: './dist' # Name of the artifact
+          path: './dist' # Path to the artifact
 
   lint-and-format:
     name: Lint & Format Check
@@ -156,7 +156,7 @@ jobs:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-output
+          name: './dist'
 
       - name: Run Unit Tests
         run: pnpm run test # Define a test command with coverage
@@ -182,7 +182,7 @@ jobs:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-output
+          name: './dist'
 
       - name: Run Pact Contract Tests
         run: CONTRACT_TEST_COMMAND # Define a contract test command
@@ -215,7 +215,7 @@ jobs:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-output
+          name: './dist'
 
       - name: Run Server
         run: pnpm run:fastify &
@@ -244,7 +244,7 @@ jobs:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
         with:
-          name: build-output
+          name: './dist'
 
       - name: Deploy to Development
         run: echo "🚀 Deployed to Dev Environment"
