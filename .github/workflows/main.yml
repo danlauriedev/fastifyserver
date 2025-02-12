@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # Allow manual triggering of workflow
 jobs:
   setup:
-    name: Setup & Cache Deps
+    name: Lint, Format & TS Compile
     runs-on: ubuntu-latest
     # outputs:
     #   cache-hit: ${{ steps.cache-pnpm-deps.outputs.cache-hit }} # Expose cache-hit to see if cache was used or not.
