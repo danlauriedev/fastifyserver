@@ -10,8 +10,8 @@ jobs:
   setup:
     name: Setup & Cache Deps
     runs-on: ubuntu-latest
-    outputs:
-      cache-hit: ${{ steps.cache-pnpm-deps.outputs.cache-hit }} # Expose cache-hit to see if cache was used or not.
+    # outputs:
+    #   cache-hit: ${{ steps.cache-pnpm-deps.outputs.cache-hit }} # Expose cache-hit to see if cache was used or not.
 
     steps:
       - name: Checkout Code # Pull latest version of code from repo, enables access to source files.
@@ -28,17 +28,17 @@ jobs:
           node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
           cache: 'pnpm'
 
-      - name: Cache pnpm Deps
-        id: cache-pnpm-deps
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
+      # - name: Cache pnpm Deps
+      #   id: cache-pnpm-deps
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.pnpm-store
+      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      #     restore-keys: |
+      #       pnpm-${{ runner.os }}-
 
       - name: Install Dependencies with pnpm
-        if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
         run: pnpm install --frozen-lockfile
 
   build:
@@ -61,13 +61,13 @@ jobs:
           node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
           cache: 'pnpm'
 
-      - name: Restore pnpm Cache # Avoid reinstalling
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
+      # - name: Restore pnpm Cache # Avoid reinstalling
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.pnpm-store
+      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      #     restore-keys: |
+      #       pnpm-${{ runner.os }}-
 
       - name: Build the Project
         run: pnpm build
@@ -101,13 +101,13 @@ jobs:
           node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
           cache: 'pnpm'
 
-      - name: Restore pnpm Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
+      # - name: Restore pnpm Cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.pnpm-store
+      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      #     restore-keys: |
+      #       pnpm-${{ runner.os }}-
 
       - name: Run Prettier
         run: pnpm run prettier:write # Define prettier command
@@ -135,13 +135,13 @@ jobs:
           node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
           cache: 'pnpm'
 
-      - name: Restore pnpm Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
+      # - name: Restore pnpm Cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.pnpm-store
+      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      #     restore-keys: |
+      #       pnpm-${{ runner.os }}-
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -161,13 +161,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Restore pnpm Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
+      # - name: Restore pnpm Cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.pnpm-store
+      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      #     restore-keys: |
+      #       pnpm-${{ runner.os }}-
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -204,7 +204,7 @@ jobs:
           name: build-output
 
       - name: Run Server
-        run: npx run:fastify &
+        run: pnpm run:fastify &
       # Better to run this with Docker instead of sudo? Can now be OS agnostic.
       - name: Run Load Tests with K6 in Docker
         run: docker run --rm -i grafana/k6 run - <load-tests/script.js
@@ -219,13 +219,13 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Restore pnpm Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            pnpm-${{ runner.os }}-
+      # - name: Restore pnpm Cache
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: ~/.pnpm-store
+      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      #     restore-keys: |
+      #       pnpm-${{ runner.os }}-
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
