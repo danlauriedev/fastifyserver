@@ -1,0 +1,192 @@
+name: DEV
+
+on:
+  push:
+    branches:
+      - development # Only trigger on development branch pushes
+  workflow_dispatch:
+
+jobs:
+  setup:
+    name: Setup & Cache Deps
+    runs-on: ubuntu-latest
+    outputs:
+      cache-hit: ${{ steps.cache-pnpm-deps.outputs.cache-hit }} # Expose cache-hit to see if cache was used or not.
+
+    steps:
+      - name: Checkout Code # Pull latest version of code from repo, enables access to source files.
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
+          cache: 'pnpm'
+
+      - name: Install pnpm
+        run: corepack enable && corepack prepare pnpm@latest --activate
+        # We need corepack to install pnpm, avoids global package install,
+        # Promotes a consistent version as comes from project's package.json.
+
+      - name: Cache pnpm Deps
+        id: cache-pnpm-deps
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Install Dependencies with pnpm
+        if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        run: pnpm install --frozen-lockfile
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore pnpm Cache # Avoid reinstalling
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Build the Project
+        run: pnpm build
+
+      - name: Check for TS errors
+        run: tsc -p tsconfig.dev.json
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-output
+          path: /dist # Need to define a build path
+
+  lint-and-format:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    needs: setup
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore pnpm Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Run Prettier
+        run: pnpm run prettier:write # Define prettier command
+
+      - name: Run ESLint
+        run: pnpm run limt # Define lint command
+
+  unit-tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    needs: [setup, build] # Runs only if setup and build pass
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore pnpm Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+
+      - name: Run Unit Tests
+        run: pnpm run test # Define a test command with coverage
+
+  pact-tests:
+    name: Pact Contract Tests
+    runs-on: ubuntu-latest
+    needs: unit-tests # Runs only if unit tests pass
+    if: ${{ vars.RUN_CONTRACT_TESTS == 'true' }} # Only runs if enabled via GitHub Actions variable
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore pnpm Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+
+      - name: Run Pact Contract Tests
+        run: CONTRACT_TEST_COMMAND # Define a contract test command
+
+  load-test:
+    name: Load Testing with K6
+    runs-on: ubuntu-latest
+    needs: pact-tests
+    if: ${{ vars.RUN_LOAD_TESTS == 'true' }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+
+      - name: Run Server
+        run: npx run:fastify &
+      # Better to run this with Docker instead of sudo? Can now be OS agnostic.
+      - name: Run Load Tests with K6 in Docker
+        run: docker run --rm -i grafana/k6 run - <load-tests/script.js
+
+  deploy-dev:
+    name: Deploy to Dev Environment
+    runs-on: ubuntu-latest
+    needs: [pact-tests, load-test, unit-tests] # Runs only if all previous tests pass, important to include unit test stage, as next ones are optional?
+    if: success() # Won't run if dependant jobs fail.
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Restore pnpm Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pnpm-store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            pnpm-${{ runner.os }}-
+
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-output
+
+      - name: Deploy to Development
+        run: echo "🚀 Deployed to Dev Environment"
