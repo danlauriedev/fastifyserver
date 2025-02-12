@@ -1,9 +1,9 @@
 import http from 'k6/http';
 import { check } from 'k6';
 
-const osType = __ENV.OS_TYPE || 'Darwin';
-const BASE_URL =
-  osType === 'linux' ? 'http://localhost:3000/scores' : 'http://host.docker.internal:3000/scores';
+// const osType = __ENV.OS_TYPE || 'Darwin';
+// const BASE_URL =
+//   osType === 'linux' ? 'http://localhost:3000/scores' : 'http://host.docker.internal:3000/scores';
 
 export const options = {
   iterations: 10,
@@ -11,7 +11,7 @@ export const options = {
 };
 
 export default function () {
-  const response = http.get(BASE_URL);
+  const response = http.get('http://localhost:3000/scores');
   check(response, {
     'is status 200': (r) => r.status === 200
   });
