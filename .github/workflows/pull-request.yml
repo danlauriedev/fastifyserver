@@ -14,7 +14,7 @@ jobs:
     # outputs:
     #   cache-hit: ${{ steps.cache-pnpm-deps.outputs.cache-hit }} # Expose cache-hit to see if cache was used or not.
 
-    steps:
+    lint-format:
       - name: Checkout Code # Pull latest version of code from repo, enables access to source files.
         uses: actions/checkout@v4
 
@@ -44,7 +44,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    needs: setup
+    needs: lint-format
 
     steps:
       - name: Checkout Code
@@ -76,7 +76,7 @@ jobs:
   unit-tests:
     name: Run Unit Tests
     runs-on: ubuntu-latest
-    needs: [setup, build] # Runs only if setup and build pass
+    needs: [lint-format, build] # Runs only if setup and build pass
 
     steps:
       - name: Checkout Code
@@ -107,7 +107,7 @@ jobs:
   pact-tests:
     name: Pact Contract Tests
     runs-on: ubuntu-latest
-    needs: [setup, build]
+    needs: [lint-format, build]
     if: ${{ vars.RUN_CONTRACT_TESTS == 'true' }} # Only runs if enabled via GitHub Actions variable
 
     steps:
