@@ -61,6 +61,9 @@ jobs:
           node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
           cache: 'pnpm'
 
+      - name: Install Dependencies with pnpm
+        # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        run: pnpm install --frozen-lockfile
       # - name: Restore pnpm Cache # Avoid reinstalling
       #   uses: actions/cache@v4
       #   with:
@@ -101,6 +104,9 @@ jobs:
           node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
           cache: 'pnpm'
 
+      - name: Install Dependencies with pnpm
+        # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        run: pnpm install --frozen-lockfile
       # - name: Restore pnpm Cache
       #   uses: actions/cache@v4
       #   with:
@@ -110,10 +116,10 @@ jobs:
       #       pnpm-${{ runner.os }}-
 
       - name: Run Prettier
-        run: pnpm run prettier:write # Define prettier command
+        run: pnpm prettier:write # Define prettier command
 
       - name: Run ESLint
-        run: pnpm run lint # Define lint command
+        run: pnpm lint # Define lint command
 
   unit-tests:
     name: Run Unit Tests
@@ -128,6 +134,10 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 10
+
+      - name: Install Dependencies with pnpm
+        # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Node.js and pnpm
         uses: actions/setup-node@v4
@@ -191,6 +201,10 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 10
+
+      - name: Install Dependencies with pnpm
+        # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
+        run: pnpm install --frozen-lockfile
 
       - name: Setup Node.js and pnpm
         uses: actions/setup-node@v4
