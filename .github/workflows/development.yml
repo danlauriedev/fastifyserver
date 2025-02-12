@@ -124,6 +124,7 @@ jobs:
   load-test:
     name: Load Testing with K6
     runs-on: ubuntu-latest
+    needs: [unit-tests]
     if: ${{ vars.RUN_LOAD_TESTS == 'true' }}
 
     steps:
@@ -158,6 +159,7 @@ jobs:
   deploy-dev:
     name: Deploy to Dev Environment
     runs-on: ubuntu-latest
+    needs: [load-test]
     # Runs only if all previous tests pass, important to include unit test stage, as next ones are optional?
     if: success() # Won't run if dependant jobs fail.
 
