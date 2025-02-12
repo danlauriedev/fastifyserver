@@ -1,10 +1,12 @@
-name: Push to Main
+name: PRs to Development
 
 on:
-  push:
+  pull_request:
+    types: opened
     branches:
-      - main
+      - development # Only trigger on development branch pushes
   workflow_dispatch: # Allow manual triggering of workflow
+
 jobs:
   setup:
     name: Setup & Cache Deps
@@ -119,72 +121,3 @@ jobs:
 
       - name: Run Pact Contract Tests
         run: CONTRACT_TEST_COMMAND # Define a contract test command
-
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: [unit-tests]
-    if: success()
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: 'tsconfig.tsbuildinfo'
-
-      - name: Deploy to Staging
-        run: echo "🚀 Deployed to Staging Environment"
-
-  approve-prod:
-    name: Manual Approval for Production
-    runs-on: ubuntu-latest
-    needs: deploy-staging
-    if: success()
-
-    steps:
-      - uses: trstringer/manual-approval@v1 # Marketplace action for manual approval
-        with:
-          secret: ${{ github.TOKEN }} # GitHub token to allow approval
-          minimum-approvals: 1 # Minimum approvals required
-          approvers:
-          issue-title: 'Deploying to prod from staging'
-          issue-body: 'Please approve or deny the deployment to prod.'
-          exclude-workflow-initiator-as-approver: true # Exclude the person who initiated the workflow
-
-  deploy-prod:
-    name: Deploy to Prod
-    runs-on: ubuntu-latest
-    needs: approve-prod
-    if: success()
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Download Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: 'tsconfig.tsbuildinfo'
-
-      - name: Deploy to Prod
-        run: echo "🚀 Deployed to Prod Environment"
-
-  sync-dev:
-    name: Sync Development with Main
-    runs-on: ubuntu-latest
-    needs: deploy-prod
-    if: success()
-
-    # With this, we can switch to the dev branch
-    # and merge the main branch into it.
-    # no edit for no change to commit message
-    steps:
-      - name: Merge Main into Development
-        run: |
-          git fetch origin
-          git checkout development
-          git merge origin/main --no-edit 
-          git push origin development
