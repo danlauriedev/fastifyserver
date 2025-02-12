@@ -148,7 +148,6 @@ jobs:
       - uses: trstringer/manual-approval@v1 # Marketplace action for manual approval
         with:
           secret: ${{ github.TOKEN }} # GitHub token to allow approval
-          approvers: [] # Add GitHub usernames who can approve/ or an org team.
           minimum-approvals: 1 # Minimum approvals required
           issue-title: 'Deploying to prod from staging'
           issue-body: 'Please approve or deny the deployment to prod.'
