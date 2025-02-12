@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "pnpm jest",
-    "test:k6": "k6 run src/scripts/k6.ts",
+    "test:k6": "docker run --rm -i grafana/k6 run - <./src/scripts/k6.ts",
     "run:fastify": "pnpm tsx src/fastify.ts",
     "lint": "pnpm eslint",
     "prettier:write": "pnpm prettier . --write",

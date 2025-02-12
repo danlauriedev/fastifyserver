@@ -12,18 +12,4 @@ const compat = new FlatCompat({
   allConfig: js.configs.all
 });
 
-export default [
-  ...compat.extends('eslint:recommended'),
-  {
-    // languageOptions: {
-    //   parser: tsParser
-    // },
-    // rules: {
-    //   'prettier/prettier': 'error',
-    //   '@typescript-eslint/explicit-function-return-type': 'warn',
-    //   '@typescript-eslint/no-explicit-any': 'warn',
-    //   '@typescript-eslint/no-unused-vars': 'error'
-    // }
-  },
-  eslintConfigPrettier
-];
+export default [...compat.extends('eslint:recommended'), {}, eslintConfigPrettier];
