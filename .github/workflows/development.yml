@@ -28,15 +28,6 @@ jobs:
           node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
           cache: 'pnpm'
 
-      # - name: Cache pnpm Deps
-      #   id: cache-pnpm-deps
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.pnpm-store
-      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-      #     restore-keys: |
-      #       pnpm-${{ runner.os }}-
-
       - name: Install Dependencies with pnpm
         # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
         run: pnpm install --frozen-lockfile
@@ -70,15 +61,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install Dependencies with pnpm
-        # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
         run: pnpm install --frozen-lockfile
-      # - name: Restore pnpm Cache # Avoid reinstalling
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.pnpm-store
-      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-      #     restore-keys: |
-      #       pnpm-${{ runner.os }}-
 
       - name: Build the Project
         run: pnpm build
@@ -104,7 +87,6 @@ jobs:
           version: 10
 
       - name: Install Dependencies with pnpm
-        # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
         run: pnpm install --frozen-lockfile
 
       - name: Setup Node.js and pnpm
@@ -112,14 +94,6 @@ jobs:
         with:
           node-version: ${{ vars.NODE_VERSION }} # Keep the node version the same as project and for the whole workflow
           cache: 'pnpm'
-
-      # - name: Restore pnpm Cache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.pnpm-store
-      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-      #     restore-keys: |
-      #       pnpm-${{ runner.os }}-
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -138,14 +112,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      # - name: Restore pnpm Cache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.pnpm-store
-      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-      #     restore-keys: |
-      #       pnpm-${{ runner.os }}-
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
@@ -171,7 +137,6 @@ jobs:
           version: 10
 
       - name: Install Dependencies with pnpm
-        # if: ${{ steps.cache-npm.outputs.cache-hit != 'true' }}
         run: pnpm install --frozen-lockfile
 
       - name: Setup Node.js and pnpm
@@ -200,14 +165,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      # - name: Restore pnpm Cache
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.pnpm-store
-      #     key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
-      #     restore-keys: |
-      #       pnpm-${{ runner.os }}-
 
       - name: Download Build Artifacts
         uses: actions/download-artifact@v4
