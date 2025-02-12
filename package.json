@@ -7,7 +7,8 @@
     "test:k6": "k6 run src/scripts/k6.ts",
     "run:fastify": "npx tsx src/fastify.ts",
     "lint": "npx eslint",
-    "prettier:write": "npx prettier --write ."
+    "prettier:write": "npx prettier --write .",
+    "build": "tsc --build"
   },
   "type": "module",
   "keywords": [],
