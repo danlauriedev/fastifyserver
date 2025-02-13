@@ -1,9 +1,9 @@
-name: Push to Main
+name: Pact Contract Test
 
 on:
   push:
     branches:
-      - main # Only trigger on development branch pushes
+      - development # Only trigger on development branch pushes
   workflow_dispatch: # Allow manual triggering of workflow
 
 jobs:
